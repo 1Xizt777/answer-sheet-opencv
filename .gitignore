@@ -7,9 +7,15 @@
 x64/
 Debug/
 Release/
+tools/*.exe
+tools/*.obj
+tools/*.dll
+
+# 生成器中间产物
+data/samples/_*.png
 
 # 调试中间产物
 data/debug/
 
-# 回归测试临时输出
+# 回归临时输出
 *.actual.json

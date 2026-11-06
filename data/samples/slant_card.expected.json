@@ -1,0 +1,11 @@
+{
+  "image": "slant_card.png",
+  "expect": "pass",
+  "key": ["B", "B", "D", "C", "C", "D"],
+  "answers": ["B", "A", "D", "B", "C", "D"],
+  "baseline": {
+    "found": true,
+    "answers": ["B", "A", "D", "B", "C", "C"],
+    "note": "第 6 题 D 是实心填涂，但原算法读成 C（取最大填充的边界误判）"
+  }
+}

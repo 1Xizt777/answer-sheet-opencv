@@ -1,0 +1,11 @@
+{
+  "image": "no_card.png",
+  "expect": "not_found",
+  "key": [""],
+  "answers": [null],
+  "baseline": {
+    "found": false,
+    "answers": [],
+    "note": ""
+  }
+}

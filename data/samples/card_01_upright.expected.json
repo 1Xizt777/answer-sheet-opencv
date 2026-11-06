@@ -1,0 +1,11 @@
+{
+  "image": "card_01_upright.png",
+  "expect": "pass",
+  "key": ["B", "B", "D", "C", "C", "D"],
+  "answers": ["B", "A", "D", "B", "C", "D"],
+  "baseline": {
+    "found": false,
+    "answers": [],
+    "note": "Canny 边框四角 1px 断点导致轮廓不闭合，maxArea=6552 < 20000 阈值"
+  }
+}

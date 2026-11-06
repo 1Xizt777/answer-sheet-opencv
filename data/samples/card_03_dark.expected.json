@@ -1,0 +1,11 @@
+{
+  "image": "card_03_dark.png",
+  "expect": "pass",
+  "key": ["B", "B", "D", "C", "C", "D"],
+  "answers": ["D", "A", "B", "C", "A", "D"],
+  "baseline": {
+    "found": true,
+    "answers": ["D", "A", "B", "C", "A", "D"],
+    "note": ""
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "image": "card_05_blank_row.png",
+  "expect": "xfail",
+  "key": ["B", "B", "D", "C", "C", "D"],
+  "answers": ["A", null, "C", null, "A", "D"],
+  "baseline": {
+    "found": true,
+    "answers": ["A", "C", "C", "A", "A", "D"],
+    "note": ""
+  }
+}
