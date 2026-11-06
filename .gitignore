@@ -1,0 +1,15 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# 构建输出
+x64/
+Debug/
+Release/
+
+# 调试中间产物
+data/debug/
+
+# 回归测试临时输出
+*.actual.json
