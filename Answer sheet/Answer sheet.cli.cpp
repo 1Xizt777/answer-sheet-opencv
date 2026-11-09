@@ -557,11 +557,27 @@ static SheetResult process(const cv::Mat& img, const std::string& debugDir, cv::
             }
 
             // 7. 结果汇总
-            std::string s1 = "total" + std::to_string(ANSWER.size());
-            std::string s2 = "right" + std::to_string(right_sum);
-            std::string s3 = "score" + std::to_string(right_sum * 100 / ANSWER.size());
+            // 分数画在卡片左下角空白处。原来画在 (20,40)，正好压在"计算机视觉测试答题卡"标题上。
+            const int score = right_sum * 100 / static_cast<int>(ANSWER.size());
+            std::string summary = "score " + std::to_string(score) + "  (" + std::to_string(right_sum)
+                                + "/" + std::to_string(ANSWER.size()) + ")";
 
-            cv::putText(card, s3 + " (" + s2 + "/" + s1 + ")", cv::Point(20, 40), cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(0, 0, 255), 2);
+            int baseline = 0;
+            const double fontScale = 0.7;
+            const int    fontThick = 2;
+            cv::Size ts = cv::getTextSize(summary, cv::FONT_HERSHEY_SIMPLEX, fontScale, fontThick, &baseline);
+
+            // 底部白边够高就画在卡内底部；不够就补一条白边再画，避免文字被裁掉。
+            int textY = card.rows - 14;
+            if (textY + baseline + 6 > card.rows || card.rows - 14 - ts.height < card.rows * 3 / 4)
+            {
+                cv::Mat taller(card.rows + baseline + 24, card.cols, card.type(), cv::Scalar(255, 255, 255));
+                card.copyTo(taller(cv::Rect(0, 0, card.cols, card.rows)));
+                card = taller;
+                textY = card.rows - 14;
+            }
+            cv::putText(card, summary, cv::Point(20, textY), cv::FONT_HERSHEY_SIMPLEX,
+                        fontScale, cv::Scalar(0, 0, 255), fontThick);
 
             result.found = true;
             result.total = static_cast<int>(ANSWER.size());
