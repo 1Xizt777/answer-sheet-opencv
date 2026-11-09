@@ -22,3 +22,6 @@ data/debug/
 
 # å›å½’ä¸´æ—¶è¾“å‡º
 *.actual.json
+
+# ³öÍ¼ÁÙÊ±Êä³ö
+docs/raw/
