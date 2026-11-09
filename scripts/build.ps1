@@ -31,6 +31,7 @@ $targets += @{ Src = Join-Path $root "Answer sheet\Answer sheet.cli.cpp"; Out = 
 
 if ($Tools) {
     $targets += @{ Src = Join-Path $root "tools\gen_samples.cpp"; Out = "gen_samples" }
+    $targets += @{ Src = Join-Path $root "tools\gen_stress.cpp";  Out = "gen_stress" }
     $targets += @{ Src = Join-Path $root "tools\diag.cpp";        Out = "diag" }
 }
 
@@ -48,6 +49,7 @@ cl /nologo /std:c++17 /EHsc /utf-8 $mdFlag /I"$OpenCVRoot\include" "$($t.Src)" /
 }
 
 # 复制运行所需 DLL
+$openBin = Join-Path $OpenCVRoot "x64\vc16\bin"
 foreach ($dll in Get-ChildItem $openBin -Filter "opencv_world*.dll" -ErrorAction SilentlyContinue) {
     Copy-Item $dll.FullName $outDir -Force
 }

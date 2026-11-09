@@ -14,6 +14,9 @@ tools/*.dll
 # 生成器中间产物
 data/samples/_*.png
 
+# 压力测试样本（几百 MB，用 run_stress.ps1 -Regen 现场生成）
+data/stress/
+
 # 调试中间产物
 data/debug/
 
