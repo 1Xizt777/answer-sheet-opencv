@@ -35,6 +35,10 @@ C++ / OpenCV 的答题卡自动阅卷程序。输入一张手机拍的答题卡�
 .\scripts\run_stress.ps1 -Count 200 -Regen
 ```
 
+> 如果报 `无法加载文件 ......ps1，未对文件进行数字签名`，是 PowerShell 执行策略拦的，不是脚本问题：
+> `powershell -ExecutionPolicy Bypass -File .\scripts\build.ps1`，或
+> `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`。
+
 ## CLI 用法
 
 ```powershell
@@ -169,6 +173,12 @@ Answer sheet/
 
 > OpenCV 5 的坑：`contourArea` / `boundingRect` 已移出 imgproc，
 > 需要 `#include <opencv2/geometry.hpp>`，否则 `error C3861`。
+
+## 已验证
+
+在干净目录克隆本仓库后，从零执行 `build.ps1 -Tools` → `run_regression.ps1` → `run_stress.ps1 -Regen`
+全部通过（回归 7/7，压力测试 4 个种子合计 500 张 100%）。`data/stress/` 不入库，
+用 `-Regen` 现场生成即可。
 
 ---
 
