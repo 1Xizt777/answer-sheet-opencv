@@ -185,7 +185,7 @@ static SheetResult process(const cv::Mat& img, const std::string& debugDir, cv::
     //   行分组只凑出 2 行，答案输出 "CD"（应为 DCDA?B）。
     //   改用亮纸掩膜后，同一批图全部 n=4、凸度 ≥ 0.99。
     std::vector<cv::Point> quad;
-    bool foundCard = false;
+    bool bfoundCard = false;
 
     {
         cv::Mat paper, bin;
@@ -194,11 +194,11 @@ static SheetResult process(const cv::Mat& img, const std::string& debugDir, cv::
         // 9x9 闭运算把气泡、文字、残留的细线并进纸面，保证纸是一个整块
         cv::morphologyEx(bin, bin, cv::MORPH_CLOSE,
                          cv::getStructuringElement(cv::MORPH_RECT, cv::Size(9, 9)));
-        foundCard = findCardQuadIn(bin, quad);
-        std::cout << "card via paper mask: " << (foundCard ? "yes" : "no") << std::endl;
+        bfoundCard = findCardQuadIn(bin, quad);
+        std::cout << "card via paper mask: " << (bfoundCard ? "yes" : "no") << std::endl;
     }
 
-    if (!foundCard)
+    if (!bfoundCard)
     {
         // 2b. Canny 路线（备选）。
         //     Canny 在答题卡四角容易断 1~2 像素，导致边框环不闭合，
@@ -215,17 +215,18 @@ static SheetResult process(const cv::Mat& img, const std::string& debugDir, cv::
         cv::Canny(gaussian, edged, 50, 200);
         cv::morphologyEx(edged, edged, cv::MORPH_CLOSE,
                          cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3)));
-        foundCard = findCardQuadIn(edged, quad);
-        std::cout << "card via canny: " << (foundCard ? "yes" : "no") << std::endl;
+        bfoundCard = findCardQuadIn(edged, quad);
+        std::cout << "card via canny: " << (bfoundCard ? "yes" : "no") << std::endl;
     }
 
-    if (!foundCard)
+    if (!bfoundCard)
     {
         result.error = "no answer sheet found";
         return result;
     }
 
     int right_sum = 0;      //答对题数量
+    
 
     {
         {
@@ -306,25 +307,29 @@ static SheetResult process(const cv::Mat& img, const std::string& debugDir, cv::
                 std::vector<int> widths, heights;
                 for (const auto& c : options)
                 {
-                    cv::Rect bb = cv::boundingRect(c);
-                    widths.push_back(bb.width);
-                    heights.push_back(bb.height);
+                    cv::Rect bb = cv::boundingRect(c);  //轮廓外接矩形
+                    widths.push_back(bb.width);     //压入外接矩形宽度数组
+                    heights.push_back(bb.height);       //压入外接矩形高度数组
                 }
                 std::sort(widths.begin(), widths.end());
                 std::sort(heights.begin(), heights.end());
-                int medW = widths[widths.size() / 2];
-                int medH = heights[heights.size() / 2];
+                int medW = widths[widths.size() / 2];       //取宽度中位数
+                int medH = heights[heights.size() / 2];     //取高度中位数
 
                 std::vector<std::vector<cv::Point>> consistent;
-                for (const auto& c : options)
+                for (const auto& c : options)   //遍历所有选项轮廓
                 {
-                    cv::Rect bb = cv::boundingRect(c);
-                    float rw = static_cast<float>(bb.width) / medW;
-                    float rh = static_cast<float>(bb.height) / medH;
+                    cv::Rect bb = cv::boundingRect(c);  //外接矩形
+                    float rw = static_cast<float>(bb.width) / medW;     //外接矩形宽度 与 宽度中位数相比
+                    float rh = static_cast<float>(bb.height) / medH;        //外接矩形高度 与 高度中位数相比
                     if (rw >= 0.6f && rw <= 1.5f && rh >= 0.6f && rh <= 1.5f)
                         consistent.push_back(c);
                 }
-                if (consistent.size() >= 4) options.swap(consistent);
+
+                if (consistent.size() >= 4) 
+                { 
+                    options.swap(consistent);   //options 与 consistent 交换内容
+                }
             }
 
             //把选项轮廓按外接矩形的y坐标升序排序
@@ -371,29 +376,42 @@ static SheetResult process(const cv::Mat& img, const std::string& debugDir, cv::
             //     按 x 排序后前 4 个里根本没有 D，第 6 题就永远读错）。
             //     这里按"到达行中位数"的做法保留最像气泡的 4 个：
             //     先按 y 对齐到行首，再看每个框的高度是否接近行内中位数。
+
             {
                 for (auto& row : questions)
                 {
                     if (row.size() <= 4) continue;
 
                     std::vector<int> hs;
-                    for (const auto& c : row) hs.push_back(cv::boundingRect(c).height);
-                    std::sort(hs.begin(), hs.end());
-                    int medH = hs[hs.size() / 2];
 
+                    for (const auto& c : row)
+                    {
+                        hs.push_back(cv::boundingRect(c).height);   //其中一行的4个选项的外接矩形高度
+                    }
+
+                    std::sort(hs.begin(), hs.end());    //外接矩形高度排序
+
+                    int medH = hs[hs.size() / 2];   //外接矩形高度中位数
+
+                    
+                    //高度越像这一行标准气泡的轮廓排前面
                     std::sort(row.begin(), row.end(),
                         [medH](const std::vector<cv::Point>& a, const std::vector<cv::Point>& b)
                         {
                             int da = std::abs(cv::boundingRect(a).height - medH);
                             int db = std::abs(cv::boundingRect(b).height - medH);
                             return da < db;
-                        });
+                        }); 
+
                     row.resize(4);
+
+                    //按外接矩形x坐标从左到右排序
                     std::sort(row.begin(), row.end(),
                         [](const std::vector<cv::Point>& a, const std::vector<cv::Point>& b)
                         {
                             return cv::boundingRect(a).x < cv::boundingRect(b).x;
                         });
+
                 }
                 // 保持原有行序（按 y 升序）
                 std::sort(questions.begin(), questions.end(),
