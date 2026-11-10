@@ -28,9 +28,12 @@ if (-not (Test-Path $Exe)) {
     exit 1
 }
 
-# OpenCV DLL 路径
-$opencvBin = "E:\Opencv\opencv\build\x64\vc16\bin"
-if (Test-Path $opencvBin) { $env:PATH = "$opencvBin;$env:PATH" }
+# OpenCV DLL 已由 build.ps1 复制到输出目录，正常情况下无需改 PATH。
+# 若你把 exe 挪到别处，可用环境变量 OPENCV_ROOT 指定 OpenCV build 目录。
+if ($env:OPENCV_ROOT) {
+    $opencvBin = Join-Path $env:OPENCV_ROOT "x64\vc16\bin"
+    if (Test-Path $opencvBin) { $env:PATH = "$opencvBin;$env:PATH" }
+}
 
 New-Item -ItemType Directory -Force -Path $debugDir | Out-Null
 

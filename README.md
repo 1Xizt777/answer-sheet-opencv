@@ -21,17 +21,53 @@ C++ / OpenCV 的答题卡自动阅卷程序。输入一张手机拍的答题卡�
 
 ---
 
+## 环境要求
+
+| 项目      | 要求                                                    |
+| ------- | ----------------------------------------------------- |
+| 操作系统    | Windows 10/11 x64                                     |
+| 编译器     | Visual Studio 2022（需安装"使用 C++ 的桌面开发"工作负载）   |
+| OpenCV  | 5.0（Windows 预编译包，vc16/x64）                     |
+| PowerShell | 5.1 或以上                                               |
+
+> **OpenCV 5.0 相比 4.x 有 API 变动**：`contourArea`、`boundingRect` 等已移到
+> `opencv2/geometry/2d.hpp`，不 include 会报 `error C3861`。本项目按 5.0 写的，用 4.x 需自行调整。
+
+### 指定 OpenCV 路径
+
+脚本不知道你的 OpenCV 装在哪，默认值是 `E:\Opencv\opencv\build`（作者机器上的路径）。用下面任一方式覆盖：
+
+```powershell
+# 方式一：传参数
+.\scripts\build.ps1 -OpenCVRoot "D:\opencv\build"
+
+# 方式二：设环境变量（当前会话有效）
+$env:OPENCV_ROOT = "D:\opencv\build"
+.\scripts\build.ps1
+
+# 方式三：改 scripts\build.ps1 里的 $DefaultOpenCVRoot
+```
+
+路径应指向 OpenCV 的 **build 目录**——该目录下应有 `include\` 和 `x64\vc16\lib\`。
+脚本会自动从 `lib` 目录里认出库文件名（`opencv_world500.lib` / `opencv_world500d.lib` 等），
+所以 OpenCV 小版本不同通常不用改脚本。
+
+VS 路径也会自动在 `Program Files\Microsoft Visual Studio\2022\` 下依次搜
+Community / Professional / Enterprise / BuildTools；装在别处时用 `-Vcvars` 指定。
+
 ## 快速开始
 
 ```powershell
-# 编译（需要 VS2022 + OpenCV 5.0）
+# 编译 CLI
 .\scripts\build.ps1
-.\scripts\build.ps1 -Tools          # 连样本生成器一起编
+
+# 连样本生成器一起编（跑压力测试必须）
+.\scripts\build.ps1 -Tools
 
 # 跑一遍固定回归（7 张样本）
 .\scripts\run_regression.ps1
 
-# 跑压力测试（N 张随机扰动图）
+# 跑压力测试（N 张随机扰动图，首次必须加 -Regen 生成）
 .\scripts\run_stress.ps1 -Count 200 -Regen
 ```
 
